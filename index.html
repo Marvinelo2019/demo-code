@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Crece Psicología — Agendar Cita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --sage: #5C8A6E;
+  --sage-light: #A8C9B5;
+  --sage-pale: #EAF2EE;
+  --cream: #FBF8F4;
+  --warm: #F0EAE0;
+  --text: #1E1C18;
+  --text-mid: #5A5040;
+  --text-light: #9A8E7E;
+  --border: #DDD5C8;
+  --white: #FFFFFF;
+  --rose: #C9827A;
+  --amber: #D4956A;
+  --r: 18px;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #E8E4DC;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 24px 16px;
+}
+
+/* PHONE SHELL */
+.phone {
+  width: 390px;
+  min-height: 844px;
+  background: var(--cream);
+  border-radius: 48px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.25), 0 0 0 2px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(255,255,255,0.5);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* STATUS BAR */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px 8px;
+  background: var(--cream);
+}
+
+.status-time { font-size: 15px; font-weight: 600; color: var(--text); }
+.status-icons { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--text); }
+
+/* SCREEN */
+.screen {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.screen::-webkit-scrollbar { display: none; }
+.screen.active { display: flex; }
+
+/* ANIMATIONS */
+@keyframes slideIn { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes slideInLeft { from { opacity: 0; transform: translateX(-32px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pop { 0%{transform:scale(0.8);opacity:0} 60%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+@keyframes checkDraw { from { stroke-dashoffset: 60; } to { stroke-dashoffset: 0; } }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+.slide-in { animation: slideIn 0.35s cubic-bezier(.25,.46,.45,.94) both; }
+.slide-left { animation: slideInLeft 0.35s cubic-bezier(.25,.46,.45,.94) both; }
+.fade-up { animation: fadeUp 0.4s ease both; }
+
+/* ─── SCREEN 1: BIENVENIDA ─── */
+.hero-bg {
+  background: linear-gradient(165deg, #3D6B52 0%, #5C8A6E 50%, #7AAD8C 100%);
+  padding: 32px 28px 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 200px; height: 200px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%;
+}
+
+.hero-bg::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: -40px;
+  width: 150px; height: 150px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 50%;
+}
+
+.clinic-logo {
+  width: 52px; height: 52px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.2);
+  margin-bottom: 20px;
+  animation: fadeUp 0.5s ease both;
+}
+
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  color: white;
+  line-height: 1.15;
+  margin-bottom: 8px;
+  animation: fadeUp 0.5s 0.1s ease both;
+}
+
+.hero-sub {
+  font-size: 14px;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.5;
+  animation: fadeUp 0.5s 0.2s ease both;
+}
+
+.hero-pills {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  margin-top: 20px;
+  animation: fadeUp 0.5s 0.3s ease both;
+}
+
+.pill {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.9);
+  backdrop-filter: blur(4px);
+}
+
+.screen-body { padding: 24px 24px 32px; display: flex; flex-direction: column; gap: 14px; }
+
+.info-card {
+  background: var(--white);
+  border-radius: var(--r);
+  padding: 18px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  animation: fadeUp 0.4s ease both;
+}
+
+.info-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.info-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--sage-pale); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.info-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.info-sub { font-size: 12px; color: var(--text-light); margin-top: 1px; }
+
+.steps { display: flex; flex-direction: column; gap: 8px; }
+.step-row { display: flex; align-items: center; gap: 10px; }
+.step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--sage); color: white; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-txt { font-size: 12px; color: var(--text-mid); }
+
+.btn-main {
+  width: 100%;
+  padding: 16px;
+  background: var(--sage);
+  color: white;
+  border: none;
+  border-radius: var(--r);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(92,138,110,0.35);
+  animation: fadeUp 0.4s 0.4s ease both;
+}
+.btn-main:hover { background: #4A7A5E; transform: translateY(-1px); }
+.btn-main:active { transform: scale(0.98); }
+
+/* ─── TOP NAV ─── */
+.top-nav {
+  display: flex; align-items: center;
+  padding: 12px 20px 8px;
+  gap: 12px;
+  background: var(--cream);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+}
+
+.back-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--warm);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.back-btn:hover { background: var(--border); }
+
+.nav-title { font-size: 15px; font-weight: 600; color: var(--text); flex: 1; }
+.nav-step { font-size: 12px; color: var(--text-light); }
+
+/* PROGRESS */
+.progress-bar { height: 3px; background: var(--border); }
+.progress-fill { height: 100%; background: var(--sage); transition: width 0.4s ease; border-radius: 2px; }
+
+/* ─── SCREEN 2: TIPO ─── */
+.tipo-grid { display: flex; flex-direction: column; gap: 12px; padding: 20px 20px 32px; }
+
+.tipo-card {
+  background: var(--white);
+  border: 2px solid var(--border);
+  border-radius: var(--r);
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; gap: 16px;
+  animation: fadeUp 0.35s ease both;
+}
+.tipo-card:nth-child(1){animation-delay:.05s}
+.tipo-card:nth-child(2){animation-delay:.1s}
+.tipo-card:nth-child(3){animation-delay:.15s}
+
+.tipo-card:hover { border-color: var(--sage-light); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+.tipo-card.selected { border-color: var(--sage); background: var(--sage-pale); }
+
+.tipo-icon { font-size: 28px; width: 52px; height: 52px; background: var(--warm); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.tipo-info { flex: 1; }
+.tipo-name { font-size: 15px; font-weight: 600; color: var(--text); }
+.tipo-desc { font-size: 12px; color: var(--text-light); margin-top: 3px; line-height: 1.4; }
+.tipo-price { font-size: 13px; font-weight: 600; color: var(--sage); margin-top: 4px; }
+.tipo-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+.tipo-card.selected .tipo-check { background: var(--sage); border-color: var(--sage); }
+.tipo-card.selected .tipo-check::after { content: '✓'; color: white; font-size: 12px; font-weight: 700; }
+
+/* ─── SCREEN 3: FECHA ─── */
+.cal-section { padding: 16px 20px; }
+.cal-month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.cal-month-name { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--text); }
+.cal-nav-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--warm); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: var(--text-mid); transition: background 0.15s; }
+.cal-nav-btn:hover { background: var(--border); }
+
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-day-name { text-align: center; font-size: 11px; color: var(--text-light); font-weight: 500; padding-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.cal-day-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 13px; cursor: pointer; color: var(--text-mid); transition: all 0.15s; position: relative; }
+.cal-day-cell:hover:not(.disabled):not(.empty) { background: var(--sage-pale); color: var(--sage); }
+.cal-day-cell.today { font-weight: 700; color: var(--sage); }
+.cal-day-cell.selected { background: var(--sage); color: white; font-weight: 600; box-shadow: 0 4px 12px rgba(92,138,110,0.35); }
+.cal-day-cell.disabled { color: var(--border); cursor: not-allowed; }
+.cal-day-cell.has-slot::after { content:''; position:absolute; bottom:3px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:var(--sage-light); }
+.cal-day-cell.selected::after { background: rgba(255,255,255,0.5); }
+.cal-day-cell.empty { cursor: default; }
+
+.hour-section { padding: 0 20px 28px; }
+.hour-label { font-size: 13px; font-weight: 600; color: var(--text-mid); margin-bottom: 12px; }
+.hour-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.hour-btn { padding: 10px; border-radius: 12px; background: var(--white); border: 1.5px solid var(--border); font-size: 13px; font-weight: 500; color: var(--text-mid); cursor: pointer; text-align: center; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+.hour-btn:hover { border-color: var(--sage); color: var(--sage); background: var(--sage-pale); }
+.hour-btn.selected { background: var(--sage); border-color: var(--sage); color: white; box-shadow: 0 3px 10px rgba(92,138,110,0.3); }
+.hour-btn.disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ─── SCREEN 4: DATOS ─── */
+.form-section { padding: 16px 20px 32px; display: flex; flex-direction: column; gap: 14px; }
+
+.form-group label { font-size: 12px; font-weight: 600; color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 6px; }
+.form-input {
+  width: 100%;
+  padding: 13px 16px;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.2s;
+  outline: none;
+  -webkit-appearance: none;
+}
+.form-input:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(92,138,110,0.1); }
+.form-input::placeholder { color: var(--text-light); }
+select.form-input { cursor: pointer; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.motivo-card { background: var(--sage-pale); border: 1.5px solid var(--sage-light); border-radius: 12px; padding: 12px 14px; }
+.motivo-label { font-size: 11px; color: var(--sage); font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+.motivo-text { font-size: 12px; color: var(--text-mid); line-height: 1.5; }
+
+/* ─── SCREEN 5: RESUMEN ─── */
+.resumen-section { padding: 16px 20px 32px; display: flex; flex-direction: column; gap: 14px; }
+
+.resumen-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+.resumen-header {
+  background: linear-gradient(135deg, var(--sage), #7AAD8C);
+  padding: 20px;
+  display: flex; align-items: center; gap: 14px;
+}
+
+.resumen-avatar { width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.resumen-clinic { flex: 1; }
+.resumen-clinic-name { font-family: 'Playfair Display', serif; font-size: 17px; color: white; }
+.resumen-dra { font-size: 12px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+
+.resumen-rows { padding: 4px 0; }
+.resumen-row { display: flex; align-items: center; gap: 14px; padding: 13px 18px; border-bottom: 1px solid var(--warm); }
+.resumen-row:last-child { border-bottom: none; }
+.resumen-ico { font-size: 18px; width: 32px; text-align: center; }
+.resumen-info { flex: 1; }
+.resumen-row-label { font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+.resumen-row-val { font-size: 14px; font-weight: 600; color: var(--text); margin-top: 1px; }
+
+.nota-box { background: var(--warm); border-radius: 12px; padding: 14px; }
+.nota-title { font-size: 12px; font-weight: 600; color: var(--text-mid); margin-bottom: 6px; }
+.nota-text { font-size: 12px; color: var(--text-light); line-height: 1.5; }
+
+.privacidad-txt { font-size: 11px; color: var(--text-light); text-align: center; line-height: 1.5; padding: 0 8px; }
+.privacidad-txt a { color: var(--sage); }
+
+/* ─── SCREEN 6: CONFIRMACIÓN ─── */
+.confirm-screen { display: flex; flex-direction: column; align-items: center; padding: 40px 24px 32px; text-align: center; }
+
+.check-circle {
+  width: 100px; height: 100px;
+  background: var(--sage-pale);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 24px;
+  animation: pop 0.6s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+.check-circle svg { width: 52px; height: 52px; }
+.check-path { stroke: var(--sage); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; fill: none; stroke-dasharray: 60; stroke-dashoffset: 60; animation: checkDraw 0.5s 0.5s ease forwards; }
+
+.confirm-title { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--text); margin-bottom: 8px; animation: fadeUp 0.4s 0.3s ease both; }
+.confirm-sub { font-size: 14px; color: var(--text-light); line-height: 1.6; margin-bottom: 28px; animation: fadeUp 0.4s 0.4s ease both; }
+
+.whatsapp-notice {
+  background: #E7F5E9;
+  border: 1px solid #B7DFC0;
+  border-radius: var(--r);
+  padding: 16px 18px;
+  display: flex; align-items: flex-start; gap: 12px;
+  width: 100%;
+  text-align: left;
+  animation: fadeUp 0.4s 0.5s ease both;
+  margin-bottom: 16px;
+}
+.wa-icon { font-size: 22px; flex-shrink: 0; }
+.wa-text { flex: 1; }
+.wa-title { font-size: 13px; font-weight: 600; color: #2D7A3A; }
+.wa-sub { font-size: 12px; color: #4A9A56; margin-top: 2px; line-height: 1.4; }
+
+.confirm-detail-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px 18px;
+  width: 100%;
+  animation: fadeUp 0.4s 0.6s ease both;
+  margin-bottom: 24px;
+}
+.confirm-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--warm); }
+.confirm-detail-row:last-child { border-bottom: none; }
+.confirm-detail-label { font-size: 12px; color: var(--text-light); }
+.confirm-detail-val { font-size: 13px; font-weight: 600; color: var(--text); }
+
+.btn-secondary {
+  width: 100%;
+  padding: 14px;
+  background: var(--warm);
+  color: var(--text-mid);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  animation: fadeUp 0.4s 0.7s ease both;
+}
+.btn-secondary:hover { background: var(--border); }
+
+/* BOTTOM SAFE */
+.bottom-safe { height: 28px; background: var(--cream); }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="status-bar">
+    <span class="status-time">9:41</span>
+    <span class="status-icons">
+      <span>📶</span>
+      <span>🔋</span>
+    </span>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN 1 — BIENVENIDA
+  ══════════════════════════════════════════ -->
+  <div class="screen active" id="s1">
+    <div class="hero-bg">
+      <div class="clinic-logo">🌿</div>
+      <div class="hero-title">Agenda tu<br>cita fácil</div>
+      <div class="hero-sub">Crece Psicología · Dra. Verenice Calderón</div>
+      <div class="hero-pills">
+        <span class="pill">✦ En línea</span>
+        <span class="pill">⏱ 2 minutos</span>
+        <span class="pill">📱 Confirmación por WhatsApp</span>
+      </div>
+    </div>
+
+    <div class="screen-body">
+      <div class="info-card" style="animation-delay:.1s">
+        <div class="info-card-header">
+          <div class="info-icon">📋</div>
+          <div>
+            <div class="info-title">¿Cómo funciona?</div>
+            <div class="info-sub">Agendar toma solo unos pasos</div>
+          </div>
+        </div>
+        <div class="steps">
+          <div class="step-row"><div class="step-num">1</div><div class="step-txt">Elige el tipo de consulta</div></div>
+          <div class="step-row"><div class="step-num">2</div><div class="step-txt">Selecciona fecha y hora disponible</div></div>
+          <div class="step-row"><div class="step-num">3</div><div class="step-txt">Ingresa tus datos de contacto</div></div>
+          <div class="step-row"><div class="step-num">4</div><div class="step-txt">Confirma y listo — recibirás un WhatsApp</div></div>
+        </div>
+      </div>
+
+      <div class="info-card" style="animation-delay:.2s">
+        <div class="info-card-header">
+          <div class="info-icon">💬</div>
+          <div>
+            <div class="info-title">Recordatorio automático</div>
+            <div class="info-sub">No te olvides de tu cita</div>
+          </div>
+        </div>
+        <div class="step-txt" style="font-size:12px;color:var(--text-mid);line-height:1.5">Te enviaremos un recordatorio por WhatsApp <strong>24 horas antes</strong> y <strong>2 horas antes</strong> de tu cita. Solo responde SÍ o NO para confirmar.</div>
+      </div>
+
+      <button class="btn-main" onclick="goto(2)">Agendar mi cita →</button>
+    </div>
+    <div class="bottom-safe"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN 2 — TIPO DE CONSULTA
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="s2">
+    <div class="top-nav">
+      <div class="back-btn" onclick="goto(1)">‹</div>
+      <div class="nav-title">Tipo de consulta</div>
+      <div class="nav-step">1 / 4</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:25%"></div></div>
+
+    <div class="tipo-grid">
+      <div class="tipo-card" onclick="selectTipo(this, 'Primera consulta')">
+        <div class="tipo-icon">🌱</div>
+        <div class="tipo-info">
+          <div class="tipo-name">Primera consulta</div>
+          <div class="tipo-desc">Es tu primera vez. Hacemos una evaluación inicial y te conocemos.</div>
+          <div class="tipo-price">60 min</div>
+        </div>
+        <div class="tipo-check"></div>
+      </div>
+
+      <div class="tipo-card" onclick="selectTipo(this, 'Sesión de seguimiento')">
+        <div class="tipo-icon">🔄</div>
+        <div class="tipo-info">
+          <div class="tipo-name">Sesión de seguimiento</div>
+          <div class="tipo-desc">Ya eres paciente y quieres agendar tu próxima sesión.</div>
+          <div class="tipo-price">50 min</div>
+        </div>
+        <div class="tipo-check"></div>
+      </div>
+
+      <div class="tipo-card" onclick="selectTipo(this, 'Consulta de urgencia')">
+        <div class="tipo-icon">⚡</div>
+        <div class="tipo-info">
+          <div class="tipo-name">Consulta de urgencia</div>
+          <div class="tipo-desc">Necesitas atención pronto. Sujeto a disponibilidad inmediata.</div>
+          <div class="tipo-price">30–50 min</div>
+        </div>
+        <div class="tipo-check"></div>
+      </div>
+    </div>
+
+    <div style="padding: 0 20px 32px">
+      <button class="btn-main" id="btn-tipo" style="opacity:.4;pointer-events:none" onclick="goto(3)">Continuar →</button>
+    </div>
+    <div class="bottom-safe"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN 3 — FECHA Y HORA
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="s3">
+    <div class="top-nav">
+      <div class="back-btn" onclick="goto(2)">‹</div>
+      <div class="nav-title">Fecha y hora</div>
+      <div class="nav-step">2 / 4</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:50%"></div></div>
+
+    <div class="cal-section">
+      <div class="cal-month-nav">
+        <div class="cal-month-name">Mayo 2026</div>
+        <div style="display:flex;gap:6px">
+          <div class="cal-nav-btn">‹</div>
+          <div class="cal-nav-btn">›</div>
+        </div>
+      </div>
+      <div class="cal-grid" id="cal"></div>
+    </div>
+
+    <div class="hour-section" id="hour-section" style="display:none">
+      <div class="hour-label">Horarios disponibles</div>
+      <div class="hour-grid" id="hour-grid"></div>
+    </div>
+
+    <div style="padding: 0 20px 32px">
+      <button class="btn-main" id="btn-fecha" style="opacity:.4;pointer-events:none" onclick="goto(4)">Continuar →</button>
+    </div>
+    <div class="bottom-safe"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN 4 — DATOS PERSONALES
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="s4">
+    <div class="top-nav">
+      <div class="back-btn" onclick="goto(3)">‹</div>
+      <div class="nav-title">Tus datos</div>
+      <div class="nav-step">3 / 4</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div>
+
+    <div class="form-section">
+      <div class="motivo-card">
+        <div class="motivo-label">Tu cita</div>
+        <div class="motivo-text" id="resumen-mini">—</div>
+      </div>
+
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input class="form-input" id="f-nombre" type="text" placeholder="Ej. Sofía Ramírez López" oninput="checkForm()">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input class="form-input" id="f-tel" type="tel" placeholder="5XXX-XXXX" oninput="checkForm()">
+        </div>
+        <div class="form-group">
+          <label>Edad</label>
+          <input class="form-input" id="f-edad" type="number" placeholder="25" min="1" max="120" oninput="checkForm()">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input class="form-input" id="f-email" type="email" placeholder="tu@correo.com" oninput="checkForm()">
+      </div>
+
+      <div class="form-group">
+        <label>Motivo de consulta</label>
+        <textarea class="form-input" id="f-motivo" placeholder="Cuéntanos brevemente qué te trae a consulta..." rows="3" style="resize:none;line-height:1.5" oninput="checkForm()"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>¿Cómo nos conociste?</label>
+        <select class="form-input" id="f-como" onchange="checkForm()">
+          <option value="">Selecciona una opción</option>
+          <option>Recomendación de un amigo</option>
+          <option>Redes sociales</option>
+          <option>Google</option>
+          <option>Otro</option>
+        </select>
+      </div>
+
+      <button class="btn-main" id="btn-datos" style="opacity:.4;pointer-events:none" onclick="goto(5)">Ver resumen →</button>
+    </div>
+    <div class="bottom-safe"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN 5 — RESUMEN Y CONFIRMAR
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="s5">
+    <div class="top-nav">
+      <div class="back-btn" onclick="goto(4)">‹</div>
+      <div class="nav-title">Confirmar cita</div>
+      <div class="nav-step">4 / 4</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div>
+
+    <div class="resumen-section">
+      <div class="resumen-card">
+        <div class="resumen-header">
+          <div class="resumen-avatar">🌿</div>
+          <div class="resumen-clinic">
+            <div class="resumen-clinic-name">Crece Psicología</div>
+            <div class="resumen-dra">Dra. Verenice Calderón</div>
+          </div>
+        </div>
+        <div class="resumen-rows">
+          <div class="resumen-row">
+            <div class="resumen-ico">👤</div>
+            <div class="resumen-info">
+              <div class="resumen-row-label">Paciente</div>
+              <div class="resumen-row-val" id="r-nombre">—</div>
+            </div>
+          </div>
+          <div class="resumen-row">
+            <div class="resumen-ico">🩺</div>
+            <div class="resumen-info">
+              <div class="resumen-row-label">Tipo de consulta</div>
+              <div class="resumen-row-val" id="r-tipo">—</div>
+            </div>
+          </div>
+          <div class="resumen-row">
+            <div class="resumen-ico">📅</div>
+            <div class="resumen-info">
+              <div class="resumen-row-label">Fecha</div>
+              <div class="resumen-row-val" id="r-fecha">—</div>
+            </div>
+          </div>
+          <div class="resumen-row">
+            <div class="resumen-ico">🕐</div>
+            <div class="resumen-info">
+              <div class="resumen-row-label">Hora</div>
+              <div class="resumen-row-val" id="r-hora">—</div>
+            </div>
+          </div>
+          <div class="resumen-row">
+            <div class="resumen-ico">📱</div>
+            <div class="resumen-info">
+              <div class="resumen-row-label">WhatsApp de confirmación</div>
+              <div class="resumen-row-val" id="r-tel">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nota-box">
+        <div class="nota-title">📲 Recordatorios automáticos</div>
+        <div class="nota-text">Recibirás un mensaje de WhatsApp <strong>24 horas antes</strong> y <strong>2 horas antes</strong> de tu cita. Responde <strong>SÍ</strong> para confirmar o <strong>NO</strong> para cancelar.</div>
+      </div>
+
+      <div class="privacidad-txt">
+        Al confirmar aceptas nuestra <a href="#">política de privacidad</a>. Tus datos se usan únicamente para gestionar tu cita.
+      </div>
+
+      <button class="btn-main" onclick="confirmar()">✓ Confirmar mi cita</button>
+    </div>
+    <div class="bottom-safe"></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SCREEN 6 — CONFIRMACIÓN EXITOSA
+  ══════════════════════════════════════════ -->
+  <div class="screen" id="s6">
+    <div class="confirm-screen">
+      <div class="check-circle">
+        <svg viewBox="0 0 52 52">
+          <polyline class="check-path" points="14,26 22,36 38,16"/>
+        </svg>
+      </div>
+
+      <div class="confirm-title">¡Cita agendada!</div>
+      <div class="confirm-sub">Tu solicitud fue recibida con éxito.<br>Te contactaremos para confirmar disponibilidad.</div>
+
+      <div class="whatsapp-notice">
+        <div class="wa-icon">💬</div>
+        <div class="wa-text">
+          <div class="wa-title">Revisa tu WhatsApp</div>
+          <div class="wa-sub">En breve recibirás un mensaje de confirmación. Recuerda responder SÍ para asegurar tu cita.</div>
+        </div>
+      </div>
+
+      <div class="confirm-detail-card">
+        <div class="confirm-detail-row">
+          <span class="confirm-detail-label">Paciente</span>
+          <span class="confirm-detail-val" id="c-nombre">—</span>
+        </div>
+        <div class="confirm-detail-row">
+          <span class="confirm-detail-label">Tipo</span>
+          <span class="confirm-detail-val" id="c-tipo">—</span>
+        </div>
+        <div class="confirm-detail-row">
+          <span class="confirm-detail-label">Fecha</span>
+          <span class="confirm-detail-val" id="c-fecha">—</span>
+        </div>
+        <div class="confirm-detail-row">
+          <span class="confirm-detail-label">Hora</span>
+          <span class="confirm-detail-val" id="c-hora">—</span>
+        </div>
+      </div>
+
+      <button class="btn-secondary" onclick="reset()">← Agendar otra cita</button>
+    </div>
+    <div class="bottom-safe"></div>
+  </div>
+
+</div>
+
+<script>
+let state = { tipo: '', dia: '', hora: '' };
+const DAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const HOURS = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00'];
+const DISABLED_H = ['09:30','10:00','14:30'];
+
+function goto(n, back) {
+  const prev = document.querySelector('.screen.active');
+  const next = document.getElementById('s'+n);
+  if (!prev || !next) return;
+  prev.classList.remove('active');
+  next.classList.add('active');
+  // Animation
+  next.querySelectorAll('.fade-up, .tipo-card, .info-card, .btn-main, .resumen-card, .nota-box, .whatsapp-notice, .confirm-detail-card, .btn-secondary').forEach(el => {
+    el.style.animation = 'none';
+    el.offsetHeight;
+    el.style.animation = '';
+  });
+  if (n === 3) buildCal();
+  if (n === 4) {
+    document.getElementById('resumen-mini').textContent = state.tipo + ' · ' + state.dia + ' a las ' + state.hora;
+    checkForm();
+  }
+  if (n === 5) fillResumen();
+  next.scrollTop = 0;
+}
+
+function selectTipo(card, name) {
+  document.querySelectorAll('.tipo-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  state.tipo = name;
+  const btn = document.getElementById('btn-tipo');
+  btn.style.opacity = '1';
+  btn.style.pointerEvents = 'auto';
+}
+
+function buildCal() {
+  const today = new Date(2026, 4, 5); // May 5 2026
+  const cal = document.getElementById('cal');
+  cal.innerHTML = '';
+  ['L','M','M','J','V','S','D'].forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'cal-day-name';
+    el.textContent = d;
+    cal.appendChild(el);
+  });
+  const first = new Date(2026, 4, 1);
+  let startDay = first.getDay(); // 0=Sun
+  startDay = startDay === 0 ? 6 : startDay - 1; // Mon=0
+  for (let i = 0; i < startDay; i++) {
+    const e = document.createElement('div');
+    e.className = 'cal-day-cell empty';
+    cal.appendChild(e);
+  }
+  const slotsOn = [6,7,8,9,12,13,14,15,16,19,20,21,22,23];
+  for (let d = 1; d <= 31; d++) {
+    const el = document.createElement('div');
+    el.className = 'cal-day-cell';
+    el.textContent = d;
+    const isPast = d < 5;
+    const isWeekend = ((startDay + d - 1) % 7) >= 5;
+    if (isPast || isWeekend) { el.classList.add('disabled'); }
+    else {
+      if (slotsOn.includes(d)) el.classList.add('has-slot');
+      el.onclick = () => selectDay(el, d);
+    }
+    if (d === 5) el.classList.add('today');
+    cal.appendChild(el);
+  }
+}
+
+function selectDay(el, d) {
+  document.querySelectorAll('.cal-day-cell.selected').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const days = ['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
+  const first = new Date(2026, 4, 1);
+  let dow = (first.getDay() + d - 1) % 7;
+  const dayNames = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  state.dia = dayNames[dow].charAt(0).toUpperCase()+dayNames[dow].slice(1)+' '+d+' de mayo';
+  state.hora = '';
+  buildHours();
+  document.getElementById('hour-section').style.display = 'block';
+  document.getElementById('btn-fecha').style.opacity = '0.4';
+  document.getElementById('btn-fecha').style.pointerEvents = 'none';
+}
+
+function buildHours() {
+  const grid = document.getElementById('hour-grid');
+  grid.innerHTML = '';
+  HOURS.forEach(h => {
+    const btn = document.createElement('button');
+    btn.className = 'hour-btn' + (DISABLED_H.includes(h) ? ' disabled' : '');
+    btn.textContent = h;
+    if (!DISABLED_H.includes(h)) btn.onclick = () => selectHour(btn, h);
+    grid.appendChild(btn);
+  });
+}
+
+function selectHour(btn, h) {
+  document.querySelectorAll('.hour-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  state.hora = h;
+  document.getElementById('btn-fecha').style.opacity = '1';
+  document.getElementById('btn-fecha').style.pointerEvents = 'auto';
+}
+
+function checkForm() {
+  const n = document.getElementById('f-nombre').value.trim();
+  const t = document.getElementById('f-tel').value.trim();
+  const e = document.getElementById('f-email').value.trim();
+  const m = document.getElementById('f-motivo').value.trim();
+  const c = document.getElementById('f-como').value;
+  const ok = n && t && e && m && c;
+  const btn = document.getElementById('btn-datos');
+  btn.style.opacity = ok ? '1' : '0.4';
+  btn.style.pointerEvents = ok ? 'auto' : 'none';
+}
+
+function fillResumen() {
+  const n = document.getElementById('f-nombre').value;
+  const t = document.getElementById('f-tel').value;
+  document.getElementById('r-nombre').textContent = n;
+  document.getElementById('r-tipo').textContent = state.tipo;
+  document.getElementById('r-fecha').textContent = state.dia;
+  document.getElementById('r-hora').textContent = state.hora;
+  document.getElementById('r-tel').textContent = t;
+}
+
+function confirmar() {
+  const n = document.getElementById('f-nombre').value;
+  document.getElementById('c-nombre').textContent = n;
+  document.getElementById('c-tipo').textContent = state.tipo;
+  document.getElementById('c-fecha').textContent = state.dia;
+  document.getElementById('c-hora').textContent = state.hora;
+  goto(6);
+}
+
+function reset() {
+  state = { tipo:'', dia:'', hora:'' };
+  document.getElementById('f-nombre').value = '';
+  document.getElementById('f-tel').value = '';
+  document.getElementById('f-edad').value = '';
+  document.getElementById('f-email').value = '';
+  document.getElementById('f-motivo').value = '';
+  document.getElementById('f-como').value = '';
+  goto(1);
+}
+</script>
+</body>
+</html>
